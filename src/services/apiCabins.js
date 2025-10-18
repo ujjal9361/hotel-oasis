@@ -16,7 +16,7 @@ export async function getCabins() {
 
 export async function deleteCabin(id) {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("cabins")
       .delete()
       .eq("id", id)
@@ -26,18 +26,19 @@ export async function deleteCabin(id) {
       throw new Error("Failed to delete cabin record");
     }
     //Extract the image name from the image URL
-    const oldImageName = data?.image?.split("/").pop();
+    // const oldImageName = data?.image?.split("/").pop();
 
     //Delete the existing image for the cabin
-    if (oldImageName) {
-      const { error: deletionStorageError } = await deleteFromStorage(
-        "cabin-images",
-        oldImageName
-      );
-      if (deletionStorageError) {
-        console.warn("Image deletion failed:", deletionStorageError.message);
-      }
-    }
+    //Skip for now since cabins can be duplicated and deleting the photo associated with a cabin can delete the image for other existing cabins
+    // if (oldImageName) {
+    //   const { error: deletionStorageError } = await deleteFromStorage(
+    //     "cabin-images",
+    //     oldImageName
+    //   );
+    //   if (deletionStorageError) {
+    //     console.warn("Image deletion failed:", deletionStorageError.message);
+    //   }
+    // }
     return null;
   } catch (err) {
     console.error(err);
