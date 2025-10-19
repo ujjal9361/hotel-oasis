@@ -1,6 +1,7 @@
 import styled from "styled-components";
 
 import { HiXMark } from "react-icons/hi2";
+import { createPortal } from "react-dom";
 
 const StyledModal = styled.div`
   position: fixed;
@@ -51,7 +52,11 @@ const Button = styled.button`
   }
 `;
 function Modal({ children, onClose }) {
-  return (
+  //react-portal us used to keep the child in the same place in react component tree but in the DOM, it is portaled into somwhere else
+  //Since the component is in same place in component tree, it can access the props while being somwhere else in DOM
+
+  //THis portaling is necessary as we might use the modal inside parent that does not cover whole viewport and have overflow set to hidden
+  return createPortal(
     <Overlay>
       <StyledModal>
         <Button onClick={onClose}>
@@ -60,7 +65,8 @@ function Modal({ children, onClose }) {
         <div>{children}</div>
       </StyledModal>
       ;
-    </Overlay>
+    </Overlay>,
+    document.body
   );
 }
 
