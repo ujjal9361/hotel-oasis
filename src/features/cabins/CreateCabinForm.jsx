@@ -10,7 +10,7 @@ import { useForm } from "react-hook-form";
 import { useCreateCabin } from "./useCreateCabin";
 import { useUpdateCabin } from "./useUpdateCabin";
 
-function CreateCabinForm({ existingCabin = {} }) {
+function CreateCabinForm({ existingCabin = {}, onCloseModal }) {
   const { id: editId, ...editValues } = existingCabin;
   const isEditForm = Boolean(editId);
   const { register, handleSubmit, reset, getValues, formState } = useForm({
@@ -18,25 +18,28 @@ function CreateCabinForm({ existingCabin = {} }) {
   });
   const { errors } = formState;
 
-  const { isCreating, addCabinMutate } = useCreateCabin();
-  const { isEditing, editCabinMutate } = useUpdateCabin();
+  const { isCreating, createCabinMutate } = useCreateCabin();
+  const { isEditing, updateCabinMutate } = useUpdateCabin();
   function onSubmit(data) {
     if (isEditForm) {
       if (typeof data.image === "string") {
         //Since this is edit form and no new photo is uploaded,all we need to pass is the cabin data
-        editCabinMutate(
+        updateCabinMutate(
           {
             newCabinData: data,
             id: editId,
             newImageUploaded: false,
           },
           {
-            onSuccess: () => reset(),
+            onSuccess: () => {
+              reset();
+              onCloseModal?.();
+            },
           }
         );
       } else {
         //This is edit form and new photo is uploaded so we need to pass new photo as well as the old photo path such that it can be deleted.
-        editCabinMutate(
+        updateCabinMutate(
           {
             newCabinData: {
               ...data,
@@ -47,16 +50,22 @@ function CreateCabinForm({ existingCabin = {} }) {
             oldImageName: existingCabin.image.split("/").pop(),
           },
           {
-            onSuccess: () => reset(),
+            onSuccess: () => {
+              reset();
+              onCloseModal?.();
+            },
           }
         );
       }
     } else {
       //New cabin needs to be added
-      addCabinMutate(
+      createCabinMutate(
         { ...data, image: data.image?.[0] },
         {
-          onSuccess: () => reset(),
+          onSuccess: () => {
+            reset();
+            onCloseModal?.();
+          },
         }
       );
     }
@@ -65,7 +74,10 @@ function CreateCabinForm({ existingCabin = {} }) {
 
   const isWorking = isCreating || isEditing;
   return (
-    <Form onSubmit={handleSubmit(onSubmit, onError)}>
+    <Form
+      onSubmit={handleSubmit(onSubmit, onError)}
+      type={onCloseModal ? "modal" : "regular"}
+    >
       <FormRow label="Cabin name" error={errors?.name?.message}>
         <Input
           type="text"
@@ -149,7 +161,12 @@ function CreateCabinForm({ existingCabin = {} }) {
 
       <FormRow>
         {/* type is an HTML attribute! */}
-        <Button disabled={isWorking} $variation="secondary" type="reset">
+        <Button
+          disabled={isWorking}
+          $variation="secondary"
+          type="reset"
+          onClick={() => onCloseModal?.()}
+        >
           Cancel
         </Button>
         <Button disabled={isWorking}>
