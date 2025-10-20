@@ -2,6 +2,8 @@ import styled from "styled-components";
 
 import { HiXMark } from "react-icons/hi2";
 import { createPortal } from "react-dom";
+import { cloneElement, createContext, useContext, useState } from "react";
+import { useOutsideClick } from "../hooks/useOutsideClickClose";
 
 const StyledModal = styled.div`
   position: fixed;
@@ -51,23 +53,53 @@ const Button = styled.button`
     color: var(--color-grey-500);
   }
 `;
-function Modal({ children, onClose }) {
+
+const ModalContext = createContext();
+function Modal({ children }) {
+  const [openName, setOpenName] = useState("");
+
+  const close = () => setOpenName("");
+  const open = setOpenName;
+
+  return (
+    <ModalContext.Provider value={{ close, open, openName }}>
+      {children}
+    </ModalContext.Provider>
+  );
+}
+
+function Open({ children, opens: nameOfWindowToBeOpened }) {
+  const { open } = useContext(ModalContext);
+  return cloneElement(children, {
+    onClick: () => open(nameOfWindowToBeOpened),
+  });
+}
+function Window({ children, name }) {
+  const { openName, close } = useContext(ModalContext);
+  const ref = useOutsideClick(close);
+
+  if (name != openName) return null;
+
   //react-portal us used to keep the child in the same place in react component tree but in the DOM, it is portaled into somwhere else
   //Since the component is in same place in component tree, it can access the props while being somwhere else in DOM
 
   //THis portaling is necessary as we might use the modal inside parent that does not cover whole viewport and have overflow set to hidden
+
   return createPortal(
     <Overlay>
-      <StyledModal>
-        <Button onClick={onClose}>
+      <StyledModal ref={ref}>
+        <Button onClick={close}>
           <HiXMark />
         </Button>
-        <div>{children}</div>
+        <div>{cloneElement(children, { onCloseModal: close })}</div>
       </StyledModal>
       ;
     </Overlay>,
     document.body
   );
 }
+
+Modal.Open = Open;
+Modal.Window = Window;
 
 export default Modal;

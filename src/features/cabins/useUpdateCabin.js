@@ -3,7 +3,7 @@ import { updateCabin } from "../../services/apiCabins";
 import toast from "react-hot-toast";
 
 export function useUpdateCabin() {
-  const queryClient = useQueryClient;
+  const queryClient = useQueryClient();
   const { mutate: updateCabinMutate, isLoading: isEditing } = useMutation({
     mutationFn: ({ newCabinData, id, newImageUploaded, oldImageName }) =>
       updateCabin(newCabinData, id, newImageUploaded, oldImageName),
