@@ -25,6 +25,10 @@ function BookingTableOperations() {
           },
           { value: "totalPrice-asc", label: "Sort by amount (low first)" },
         ]}
+        defaultOption={{
+          value: "startDate-desc",
+          label: "Sort by date (recent first)",
+        }}
       />
     </TableOperations>
   );
